@@ -127,7 +127,11 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Connect4.cpp" />
     <ClCompile Include="CS255-Connect4-AI.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Connect4.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
