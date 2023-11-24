@@ -13,12 +13,15 @@ private:
 	char currentPlayer;
 
 	void printBoard();
+
 	int userMove();
+	int aiMove();
 	bool makeMove(int column, char playerCharacter);
-	bool checkWin(int row, int column);
-	bool checkHorizontal(int row, int column);
-	bool checkVertical(int row, int column);
-	bool checkDiagonal(int row, int column);
+
+	bool checkWin();
+	bool checkHorizontal();
+	bool checkVertical();
+	bool checkDiagonal();
 	bool boardIsFull();
 
 	int evaulate();

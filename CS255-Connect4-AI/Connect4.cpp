@@ -10,21 +10,29 @@ Connect4::Connect4(int rows, int columns) : numRows(rows), numColumns(columns), 
 			board[i][j] = ' ';
 		}
 	}
-
 }
 
 
 void Connect4::playGame()
 {
-	char playerSymbol = 'X';
-	int col;
-	bool validMove;
+	char user = 'X';
+	char computer = 'O';
 
-	do {
+	currentPlayer = user;
+
+	bool gameDone = false;
+
+	while(!gameDone) {
 		this->printBoard();
-		col = userMove();
-		makeMove(col, currentPlayer);
-		if (this->checkWin(numRows - 1, col)) {
+		if (currentPlayer == user) {
+			makeMove(userMove(), user);
+		}
+		else if (currentPlayer == computer) {
+			makeMove(aiMove(), computer);
+		}
+
+		gameDone = checkWin();
+		if (gameDone) {
 			this->printBoard();
 			std::cout << "Player " << currentPlayer << " wins!\n";
 			return;
@@ -35,9 +43,9 @@ void Connect4::playGame()
 			return;
 		}
 
-		currentPlayer = (currentPlayer == 'X') ? 'O' : 'X';
+		currentPlayer = (currentPlayer == user) ? computer : user;
 
-	} while (true);
+	}
 }
 
 void Connect4::printBoard()
@@ -76,6 +84,11 @@ int Connect4::userMove()
 	return move;
 }
 
+int Connect4::aiMove()
+{
+	return 0;
+}
+
 bool Connect4::makeMove(int column, char playerCharacter)
 {
 	for (int i = numRows - 1; i >= 0; --i) {
@@ -88,77 +101,83 @@ bool Connect4::makeMove(int column, char playerCharacter)
 	return false;
 }
 
-bool Connect4::checkWin(int row, int column)
+bool Connect4::checkWin()
 {
-	return checkHorizontal(row, column) || checkVertical(row, column) || checkDiagonal(row, column);
+	return checkHorizontal() || checkVertical() || checkDiagonal();
 }
 
-bool Connect4::checkHorizontal(int row, int column)
+bool Connect4::checkHorizontal()
 {
 	int count = 0;
 	
-	for (int j = 0; j < numColumns; ++j) {
-		if (board[row][j] == currentPlayer) {
-			count++;
-			if (count == 4) return true;
-		}
-		else {
+	for (int c = 0; c < numColumns; c++) {
+		for (int r = 0; r < numRows; r++) {
+			for (int i = 0; i < 4; i++) {
+				if (board[r][c + i] == currentPlayer) {
+					count++;
+				}
+				if (count == 4) { 
+					return true; 
+				}
+			}
 			count = 0;
 		}
 	}
 	return false;
 }
 
-bool Connect4::checkVertical(int row, int column)
+bool Connect4::checkVertical()
 {
 	int count = 0;
-	
-	for (int i = 0; i < numRows; i++) {
-		if (board[i][column] == currentPlayer) {
-			count++;
-			if (count == 4) return true;
-		}
-		else {
-			count = 0;
-		}
-	}
-	
-	return false;
-}
 
-bool Connect4::checkDiagonal(int row, int column)
-{
-	// Top-left to bottom-right
-	int count = 0;
-
-	for (int i = row - 3, j = column - 3; i <= row + 3 && j <= column + 3; ++i, ++j) {
-		if (i >= 0 && i < numRows && j >= 0 && j < numColumns) {
-			if (board[i][j] == currentPlayer) {
-				count++;
+	for (int c = 0; c < numColumns; c++) {
+		for (int r = 0; r < numRows - 3; r++) {
+			for (int i = 0; i < 4; i++) {
+				if (board[r + i][c] == currentPlayer) {
+					count++;
+				}
 				if (count == 4) {
 					return true;
 				}
 			}
-			else {
-				count = 0;
-			}
+			count = 0;
 		}
 	}
 
-	// Bottom-left to top-right
+	return false;
+}
+
+bool Connect4::checkDiagonal()
+{
+	int count = 0;
+
+	for (int c = 0; c < numColumns - 3; c++) {
+		for (int r = 3; r < numRows; r++) {
+			for (int i = 0; i < 4; i++) {
+				if (board[r - i][c + i] == currentPlayer) {
+					count++;
+				}
+				if (count == 4) {
+					return true;
+				}
+			}
+			count = 0;
+		}
+	}
+
 	count = 0;
 
-	for (int i = row - 3, j = column + 3; i <= row + 3 && j >= column - 3; ++i, --j) {
-		if (i >= 0 && i < numRows && j >= 0 && j < numColumns) {
-			if (board[i][j] == currentPlayer) {
-				count++;
+	for (int c = 0; c < numColumns - 3; c++) {
+		for (int r = 3; r < numRows - 3; r++) {
+			for (int i = 0; i < 4; i++) {
+				if (board[r + i][c + i] == currentPlayer) {
+					count++;
+				}
 				if (count == 4) {
 					return true;
 				}
 			}
-			else {
-				count = 0;
-			}
+			count = 0;
 		}
 	}
 
@@ -179,6 +198,11 @@ bool Connect4::boardIsFull()
 }
 
 int Connect4::evaulate()
+{
+	return 0;
+}
+
+int Connect4::minimax()
 {
 	return 0;
 }
