@@ -22,34 +22,22 @@ void Connect4::playGame()
 
 	do {
 		this->printBoard();
-		std::cout << "Player " << currentPlayer << " enter your move: ";
-		std::cin >> col;
-
-		validMove = col >= 0 && col < numColumns&& board[0][col] == ' ' && this->makeMove(col, currentPlayer);
-
-		if (!validMove) {
-			std::cout << "Invalid move. Try again.\n";
-		} 
-		else {
-			if (this->checkWin(numRows - 1, col)) {
-				this->printBoard();
-				std::cout << "Player " << currentPlayer << " wins!\n";
-				return;
-			}
-			else if (this->boardIsFull()) {
-				this->printBoard();
-				std::cout << "The game is a draw.\n";
-				return;
-			}
-
-			currentPlayer = (currentPlayer == 'X') ? 'O' : 'X';
+		col = userMove();
+		makeMove(col, currentPlayer);
+		if (this->checkWin(numRows - 1, col)) {
+			this->printBoard();
+			std::cout << "Player " << currentPlayer << " wins!\n";
+			return;
+		}
+		else if (this->boardIsFull()) {
+			this->printBoard();
+			std::cout << "The game is a draw.\n";
+			return;
 		}
 
+		currentPlayer = (currentPlayer == 'X') ? 'O' : 'X';
+
 	} while (true);
-
-	
-
-
 }
 
 void Connect4::printBoard()
@@ -61,6 +49,31 @@ void Connect4::printBoard()
 		std::cout << "\n";
 	}
 	std::cout << "\n";
+}
+
+int Connect4::userMove()
+{
+	int move = -1;
+	while (true) {
+		std::cout << "Player " << currentPlayer << " enter a column: ";
+		std::cin >> move;
+
+		if (!std::cin) {	// handle non-int input
+			std::cin.clear();
+			std::cin.ignore(INT_MAX, '\n');
+			std::cout << "Please enter an integer.\n";
+		}
+		else if (!(move < numColumns && move >= 0)) {
+			std::cout << "Invalid move, try again.\n";
+		}
+		else if (!(move >= 0 && move < numColumns && board[0][move] == ' ')) {
+			std::cout << "Column is full, try again.\n";
+		}
+		else {
+			break; // valid input
+		}
+	}
+	return move;
 }
 
 bool Connect4::makeMove(int column, char playerCharacter)
@@ -163,4 +176,9 @@ bool Connect4::boardIsFull()
 		}
 	}
 	return true;
+}
+
+int Connect4::evaulate()
+{
+	return 0;
 }

@@ -13,6 +13,7 @@ private:
 	char currentPlayer;
 
 	void printBoard();
+	int userMove();
 	bool makeMove(int column, char playerCharacter);
 	bool checkWin(int row, int column);
 	bool checkHorizontal(int row, int column);
@@ -20,6 +21,7 @@ private:
 	bool checkDiagonal(int row, int column);
 	bool boardIsFull();
 
-
+	int evaulate();
+	int minimax();
 };
 
