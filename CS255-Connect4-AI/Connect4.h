@@ -1,4 +1,5 @@
 #pragma once
+
 class Connect4
 {
 public:
@@ -12,9 +13,9 @@ private:
 	char** board;
 	char currentPlayer;
 
-	void printBoard();
+	void printBoard(char** board);
 
-	int userMove();
+	int userMove(int turns);
 	int aiMove();
 	bool makeMove(int column, char playerCharacter);
 
@@ -24,6 +25,7 @@ private:
 	bool checkDiagonal();
 	bool boardIsFull();
 
+	char** copyBoard(char** board);
 	int evaulate();
 	int minimax();
 };

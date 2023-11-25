@@ -1,13 +1,13 @@
 #include "Connect4.h"
 #include <iostream>
 
-Connect4::Connect4(int rows, int columns) : numRows(rows), numColumns(columns), currentPlayer('X')
+Connect4::Connect4(int rows, int columns) : numRows(rows), numColumns(columns), currentPlayer(' ')
 {
 	board = new char* [numRows];
-	for (int i = 0; i < numRows; ++i) {
-		board[i] = new char[numColumns];
-		for (int j = 0; j < numColumns; ++j) {
-			board[i][j] = ' ';
+	for (int r = 0; r < numRows; ++r) {
+		board[r] = new char[numColumns];
+		for (int c = 0; c < numColumns; ++c) {
+			board[r][c] = ' ';
 		}
 	}
 }
@@ -20,25 +20,29 @@ void Connect4::playGame()
 
 	currentPlayer = user;
 
+	int turns = 0;
+
 	bool gameDone = false;
 
 	while(!gameDone) {
-		this->printBoard();
+		this->printBoard(board);
 		if (currentPlayer == user) {
-			makeMove(userMove(), user);
+			this->makeMove(userMove(turns), user);
 		}
 		else if (currentPlayer == computer) {
-			makeMove(aiMove(), computer);
+			this->makeMove(aiMove(), computer);
 		}
 
-		gameDone = checkWin();
+		turns++;
+
+		gameDone = this->checkWin();
 		if (gameDone) {
-			this->printBoard();
+			this->printBoard(board);
 			std::cout << "Player " << currentPlayer << " wins!\n";
 			return;
 		}
 		else if (this->boardIsFull()) {
-			this->printBoard();
+			this->printBoard(board);
 			std::cout << "The game is a draw.\n";
 			return;
 		}
@@ -48,18 +52,18 @@ void Connect4::playGame()
 	}
 }
 
-void Connect4::printBoard()
+void Connect4::printBoard(char** board)
 {
-	for (int i = 0; i < numRows; ++i) {
-		for (int j = 0; j < numColumns; ++j) {
-			std::cout << board[i][j] << " | ";
+	for (int r = 0; r < numRows; ++r) {
+		for (int c = 0; c < numColumns; ++c) {
+			std::cout << board[r][c] << " | ";
 		}
 		std::cout << "\n";
 	}
 	std::cout << "\n";
 }
 
-int Connect4::userMove()
+int Connect4::userMove(int turns)
 {
 	int move = -1;
 	while (true) {
@@ -77,6 +81,9 @@ int Connect4::userMove()
 		else if (!(move >= 0 && move < numColumns && board[0][move] == ' ')) {
 			std::cout << "Column is full, try again.\n";
 		}
+		else if (turns <= 1 && (move == numColumns / 2 || move == 0 || move == numColumns - 1)) {
+			std::cout << "Cannot choose middle or edge columns on first turn.\n";
+		}
 		else {
 			break; // valid input
 		}
@@ -86,14 +93,15 @@ int Connect4::userMove()
 
 int Connect4::aiMove()
 {
-	return 0;
+	std::cout << "AI is choosing a move..." << std::endl;
+	return minimax();
 }
 
 bool Connect4::makeMove(int column, char playerCharacter)
 {
-	for (int i = numRows - 1; i >= 0; --i) {
-		if (board[i][column] == ' ') {
-			board[i][column] = playerCharacter;
+	for (int r = numRows - 1; r >= 0; --r) {
+		if (board[r][column] == ' ') {
+			board[r][column] = playerCharacter;
 			return true;
 		}
 	}
@@ -187,9 +195,9 @@ bool Connect4::checkDiagonal()
 bool Connect4::boardIsFull()
 
 {
-	for (int i = 0; i < numRows; ++i) {
-		for (int j = 0; j < numColumns; ++j) {
-			if (board[i][j] == ' ') {
+	for (int r = 0; r < numRows; ++r) {
+		for (int c = 0; c < numColumns; ++c) {
+			if (board[r][c] == ' ') {
 				return false;
 			}
 		}
@@ -197,12 +205,31 @@ bool Connect4::boardIsFull()
 	return true;
 }
 
+
+
+char** Connect4::copyBoard(char** board)
+{
+	char** newBoard = new char* [numRows];
+	for (int r = 0; r < numRows; ++r) {
+		newBoard[r] = new char[numColumns];
+		for (int c = 0; c < numColumns; ++c) {
+			newBoard[r][c] = board[r][c];
+		}
+	}
+	
+	return newBoard;
+}
+
 int Connect4::evaulate()
 {
+
 	return 0;
 }
 
 int Connect4::minimax()
 {
+	this->evaulate();
+	//this->printBoard(copyBoard(board));
+
 	return 0;
 }
