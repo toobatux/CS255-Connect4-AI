@@ -17,8 +17,26 @@ void Connect4::playGame()
 {
 	char user = 'X';
 	char computer = 'O';
+	int firstmove = 0;
 
-	currentPlayer = user;
+	std::cout << "Who plays first (1 for user, 2 for AI): ";
+	
+	while (true) {
+		std::cin >> firstmove;
+		if (firstmove == 1) {
+			currentPlayer = user;
+			break;
+		}
+		else if (firstmove == 2) {
+			currentPlayer = computer;
+			break;
+		}
+		else {
+			std::cout << "Please select 1 as player moves first or 2 for the AI to move first: ";
+		}
+	}
+	
+
 
 	bool gameDone = false;
 
