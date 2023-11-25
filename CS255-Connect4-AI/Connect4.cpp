@@ -169,15 +169,15 @@ bool Connect4::checkDiagonal()
 {
 	int count = 0;
 
-	for (int c = 0; c < numColumns - 3; c++) {
-		for (int r = 3; r < numRows; r++) {
+	for (int r = 0; r < numRows - 3; r++) {
+		for (int c = 0; c < numColumns - 3; c++) {
 			for (int i = 0; i < 4; i++) {
-				if (board[r - i][c + i] == currentPlayer) {
+				if (board[r + i][c + i] == currentPlayer) {
 					count++;
 				}
-				if (count == 4) {
-					return true;
-				}
+			}
+			if (count == 4) {
+				return true;
 			}
 			count = 0;
 		}
@@ -185,15 +185,15 @@ bool Connect4::checkDiagonal()
 
 	count = 0;
 
-	for (int c = 0; c < numColumns - 3; c++) {
-		for (int r = 3; r < numRows - 3; r++) {
+	for (int r = 0; r < numRows - 3; r++) {
+		for (int c = numColumns - 1; c >= 3; c--) {
 			for (int i = 0; i < 4; i++) {
-				if (board[r + i][c + i] == currentPlayer) {
+				if (board[r + i][c - i] == currentPlayer) {
 					count++;
 				}
-				if (count == 4) {
-					return true;
-				}
+			}
+			if (count == 4) {
+				return true;
 			}
 			count = 0;
 		}
