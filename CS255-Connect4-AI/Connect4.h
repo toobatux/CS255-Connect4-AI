@@ -1,32 +1,45 @@
 #pragma once
+#include <vector>
 
-class Connect4
-{
+const int EMPTY = 0;
+const int PLAYER = 1;
+const int AI = 2;
+
+class Connect4 {
 public:
-	Connect4(int rows, int columns);
-	//~Connect4();
+	Connect4(int rows, int columns) : numRows(rows), numColumns(columns), board(rows, std::vector<int>(columns, EMPTY)), currentPlayer(PLAYER), turns(0) {}
+
+	const std::vector<std::vector<int>>& getBoard() const { return board; }
+	int getRows() const { return numRows; }
+	int getColumns() const { return numColumns; }
+
+	void printBoard();
+
 	void playGame();
 
 private:
 	int numRows;
 	int numColumns;
-	char** board;
-	char currentPlayer;
+	std::vector<std::vector<int>> board;
+	int currentPlayer;
+	int turns;
 
-	void printBoard(char** board);
-
-	int userMove(int turns);
-	int aiMove();
-	bool makeMove(int column, char playerCharacter);
+	int userMove();
+	bool isValidMove(int column);
+	bool makeMove(int column, int player);
 
 	bool checkWin();
 	bool checkHorizontal();
 	bool checkVertical();
 	bool checkDiagonal();
-	bool boardIsFull();
+	bool isBoardFull();
 
-	char** copyBoard(char** board);
-	int evaulate();
-	int minimax();
+	Connect4 copy();
+
+	int aiMove();
+	int bestMove();
+	int minimax(Connect4& game, int depth, int alpha, int beta, bool maximizingPlayer);
+	int evaluate(Connect4& game);
+	int occurrences(Connect4& game, int player);
 };
 

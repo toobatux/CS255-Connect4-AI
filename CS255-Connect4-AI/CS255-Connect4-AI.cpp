@@ -3,8 +3,8 @@
 
 int main()
 {
-	Connect4 Game(6, 7);
+	Connect4 Game(12, 13);
 	Game.playGame();
-	
+
 	return 0;
 }
