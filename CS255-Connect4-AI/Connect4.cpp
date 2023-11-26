@@ -41,8 +41,6 @@ void Connect4::playGame()
 
         //this->makeMove(userMove(turns), currentPlayer);
 
-        turns++;
-
         gameDone = this->checkWin();
         if (gameDone) {
             this->printBoard();
@@ -97,6 +95,7 @@ bool Connect4::makeMove(int column, int player)
     for (int r = numRows - 1; r >= 0; r--) {
         if (board[r][column] == EMPTY) {
             board[r][column] = player;
+            turns++;
             return true;
         }
     }
@@ -202,6 +201,7 @@ Connect4 Connect4::copy()
 {
     Connect4 clone(numRows, numColumns);
     clone.board = board;
+    clone.turns = turns;
 
     return clone;
 }
@@ -225,13 +225,23 @@ int Connect4::bestMove()
     //for (int c = 0; c < numColumns; c++) {
     for (int c : priorityOrder) {
         if (isValidMove(c)) {
-            Connect4 clone = this->copy();
-            clone.makeMove(c, AI);
-            int eval = minimax(clone, 6, INT_MIN, INT_MAX, false);
+            if (OppWinPosInColumn(c)) {
+                return c;
+            }
+            else {
+                Connect4 clone = this->copy();
+                clone.makeMove(c, AI);
 
-            if (eval > bestEval) {
-                bestEval = eval;
-                bestMove = c;
+                if (clone.checkWin()) {
+                    return c;
+                }
+
+                int eval = minimax(clone, 6, INT_MIN, INT_MAX, false);
+
+                if (eval > bestEval) {
+                    bestEval = eval;
+                    bestMove = c;
+                }
             }
         }
     }
@@ -290,6 +300,7 @@ int Connect4::minimax(Connect4& game, int depth, int alpha, int beta, bool maxim
                 beta = std::min(beta, eval);
 
                 if (beta <= alpha) { break; }
+
             }
         }
         return minEval;
@@ -317,4 +328,34 @@ int Connect4::occurrences(Connect4& game, int player)
     }
 
     return count;
+}
+
+int Connect4::countWinPos(int player)
+{
+    int count = 0;
+
+    for (int c = 0; c < numColumns; c++) {
+        if (isValidMove(c)) {
+            Connect4 clone = this->copy();
+            clone.makeMove(c, player);
+            if (clone.checkWin()) {
+                count++;
+            }
+        }
+    }
+
+    return count;
+}
+
+bool Connect4::OppWinPosInColumn(int column)
+{
+    if (isValidMove(column)) {
+        Connect4 clone = this->copy();
+        clone.makeMove(column, PLAYER);
+        //clone.printBoard();
+        bool isOppWinning = clone.checkWin();
+        //std::cout << "Opponent winning position in column " << column << ": " << (isOppWinning ? "Yes" : "No") << std::endl;
+        return isOppWinning;
+    }
+    return false;
 }
