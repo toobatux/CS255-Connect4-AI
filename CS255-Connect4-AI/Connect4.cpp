@@ -244,14 +244,15 @@ std::vector<int> Connect4::calculatePriority()
     std::vector<int> priorityOrder;
 
     priorityOrder.push_back(centerCol);
-    priorityOrder.push_back(0);
-    priorityOrder.push_back(numColumns - 1);
 
     for (int c = 1; c < numColumns - 1; c++) {
         if (c != centerCol) {
             priorityOrder.push_back(c);
         }
     }
+
+    priorityOrder.push_back(0);
+    priorityOrder.push_back(numColumns - 1);
 
     return priorityOrder;
 }
