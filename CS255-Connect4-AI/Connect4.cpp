@@ -217,10 +217,13 @@ int Connect4::aiMove()
 
 int Connect4::bestMove()
 {
+    std::vector<int> priorityOrder = calculatePriority();
+
     int bestMove = -1;
     int bestEval = INT_MIN;
 
-    for (int c = 0; c < numColumns; c++) {
+    //for (int c = 0; c < numColumns; c++) {
+    for (int c : priorityOrder) {
         if (isValidMove(c)) {
             Connect4 clone = this->copy();
             clone.makeMove(c, AI);
@@ -233,6 +236,24 @@ int Connect4::bestMove()
         }
     }
     return bestMove;
+}
+
+std::vector<int> Connect4::calculatePriority()
+{
+    int centerCol = numColumns / 2;
+    std::vector<int> priorityOrder;
+
+    priorityOrder.push_back(centerCol);
+    priorityOrder.push_back(0);
+    priorityOrder.push_back(numColumns - 1);
+
+    for (int c = 1; c < numColumns - 1; c++) {
+        if (c != centerCol) {
+            priorityOrder.push_back(c);
+        }
+    }
+
+    return priorityOrder;
 }
 
 int Connect4::minimax(Connect4& game, int depth, int alpha, int beta, bool maximizingPlayer)
