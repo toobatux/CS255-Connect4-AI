@@ -1,5 +1,6 @@
 #pragma once
 #include <vector>
+#include <chrono>
 
 const int EMPTY = 0;
 const int PLAYER = 1;
@@ -9,7 +10,7 @@ class Connect4 {
 public:
 	Connect4(int rows, int columns) : numRows(rows), numColumns(columns), board(rows, std::vector<int>(columns, EMPTY)), currentPlayer(PLAYER), turns(0) {}
 	void printBoard();
-	void playGame();
+	void playGame(int maxTimeSeconds);
 
 private:
 	int numRows;
@@ -30,10 +31,10 @@ private:
 
 	Connect4 copy();
 
-	int aiMove();
-	int bestMove();
+	int aiMove(int maxTimeSeconds);
+	int bestMoveWithinTime(int maxTimeSeconds);
 	std::vector<int> calculatePriority();
-	int minimax(Connect4& game, int depth, int alpha, int beta, bool maximizingPlayer);
+	int minimax(Connect4& game, int depth, int alpha, int beta, bool maximizingPlayer, std::chrono::high_resolution_clock::time_point startTime, int maxTimeSeconds);
 
 	int evaluate(Connect4& game);
 	int occurrences(Connect4& game, int player);

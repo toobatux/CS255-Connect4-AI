@@ -1,5 +1,6 @@
 #include "Connect4.h"
 #include <iostream>
+#include <chrono>
 
 void Connect4::printBoard()
 {
@@ -24,7 +25,7 @@ void Connect4::printBoard()
     std::cout << std::endl << std::endl;
 }
 
-void Connect4::playGame()
+void Connect4::playGame(int maxTimeSeconds)
 {
     currentPlayer = PLAYER;
 
@@ -36,7 +37,7 @@ void Connect4::playGame()
             this->makeMove(userMove(), PLAYER);
         }
         else if (currentPlayer == AI) {
-            this->makeMove(aiMove(), AI);
+            this->makeMove(aiMove(maxTimeSeconds), AI);
         }
 
         //this->makeMove(userMove(turns), currentPlayer);
@@ -208,22 +209,30 @@ Connect4 Connect4::copy()
 
 
 // AI methods
-int Connect4::aiMove()
+int Connect4::aiMove(int maxTimeSeconds)
 {
     std::cout << "AI is choosing a move...\n";
 
-    return bestMove();
+    return bestMoveWithinTime(maxTimeSeconds);
 }
 
-int Connect4::bestMove()
+int Connect4::bestMoveWithinTime(int maxTimeSeconds)
 {
-    std::vector<int> priorityOrder = calculatePriority();
+    auto startTime = std::chrono::high_resolution_clock::now();
 
+    std::vector<int> priorityOrder = calculatePriority();
     int bestMove = -1;
     int bestEval = INT_MIN;
 
     //for (int c = 0; c < numColumns; c++) {
     for (int c : priorityOrder) {
+        auto currentTime = std::chrono::high_resolution_clock::now();
+        auto elapsedTime = std::chrono::duration_cast<std::chrono::seconds>(currentTime - startTime).count();
+
+        if (elapsedTime >= maxTimeSeconds) {
+            break;
+        }
+
         if (isValidMove(c)) {
             if (OppWinPosInColumn(c)) {
                 return c;
@@ -236,8 +245,8 @@ int Connect4::bestMove()
                     return c;
                 }
 
-                int eval = minimax(clone, 6, INT_MIN, INT_MAX, false);
-
+                int eval = minimax(clone, 6, INT_MIN, INT_MAX, false, startTime, maxTimeSeconds);
+                
                 if (eval > bestEval) {
                     bestEval = eval;
                     bestMove = c;
@@ -245,6 +254,7 @@ int Connect4::bestMove()
             }
         }
     }
+
     return bestMove;
 }
 
@@ -267,9 +277,12 @@ std::vector<int> Connect4::calculatePriority()
     return priorityOrder;
 }
 
-int Connect4::minimax(Connect4& game, int depth, int alpha, int beta, bool maximizingPlayer)
+int Connect4::minimax(Connect4& game, int depth, int alpha, int beta, bool maximizingPlayer, std::chrono::high_resolution_clock::time_point startTime, int maxTimeSeconds)
 {
-    if (depth == 0 || game.checkWin() || game.isBoardFull()) {
+    auto currentTime = std::chrono::high_resolution_clock::now();
+    auto elapsedTime = std::chrono::duration_cast<std::chrono::seconds>(currentTime - startTime).count();
+
+    if (depth == 0 || game.checkWin() || game.isBoardFull() || elapsedTime >= maxTimeSeconds) {
         return evaluate(game);
     }
 
@@ -279,7 +292,7 @@ int Connect4::minimax(Connect4& game, int depth, int alpha, int beta, bool maxim
             if (game.isValidMove(c)) {
                 Connect4 clone = game.copy();
                 clone.makeMove(c, AI);
-                int eval = minimax(clone, depth - 1, alpha, beta, false);
+                int eval = minimax(clone, depth - 1, alpha, beta, false, startTime, maxTimeSeconds);
                 maxEval = std::max(maxEval, eval);
                 alpha = std::max(alpha, eval);
 
@@ -295,7 +308,7 @@ int Connect4::minimax(Connect4& game, int depth, int alpha, int beta, bool maxim
             if (game.isValidMove(c)) {
                 Connect4 clone = game.copy();
                 clone.makeMove(c, PLAYER);
-                int eval = minimax(clone, depth - 1, alpha, beta, true);
+                int eval = minimax(clone, depth - 1, alpha, beta, true, startTime, maxTimeSeconds);
                 minEval = std::min(minEval, eval);
                 beta = std::min(beta, eval);
 
