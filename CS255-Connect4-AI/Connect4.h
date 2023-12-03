@@ -41,6 +41,5 @@ private:
 	int countWinPos(int player);
 
 	bool OppWinPosInColumn(int column);
-
 };
 

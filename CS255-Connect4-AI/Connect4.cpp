@@ -62,7 +62,7 @@ int Connect4::userMove()
 {
     int move = -1;
 
-    std::cout << "Player " << currentPlayer << " enter your move (column number 0 - " << numColumns - 1 << ") : ";
+    std::cout << "Player " << currentPlayer << " enter your move (column 0 - " << numColumns - 1 << "): ";
     std::cin >> move;
 
     while (!isValidMove(move)) {
@@ -234,17 +234,16 @@ int Connect4::bestMoveWithinTime(int maxTimeSeconds)
         }
 
         if (isValidMove(c)) {
-            if (OppWinPosInColumn(c)) {
+            Connect4 clone = this->copy();
+            clone.makeMove(c, AI);
+
+            if (clone.checkWin()) {
+                return c;
+            }
+            else if (OppWinPosInColumn(c)) {
                 return c;
             }
             else {
-                Connect4 clone = this->copy();
-                clone.makeMove(c, AI);
-
-                if (clone.checkWin()) {
-                    return c;
-                }
-
                 int eval = minimax(clone, 6, INT_MIN, INT_MAX, false, startTime, maxTimeSeconds);
                 
                 if (eval > bestEval) {
