@@ -36,8 +36,11 @@ private:
 	std::vector<int> calculatePriority();
 	int minimax(Connect4& game, int depth, int alpha, int beta, bool maximizingPlayer, std::chrono::high_resolution_clock::time_point startTime, int maxTimeSeconds);
 
-	int evaluate(Connect4& game);
-	int occurrences(Connect4& game, int player);
+	int evaluate(Connect4& game, int player);
+	int evaluatePlayer(Connect4& game, int playerToCheck, int currentPlayer);
+	int evaluatePosition(Connect4& game, int row, int col, int playerToCheck, int currentPlayer);
+	int evaluateLine(Connect4& game, int row, int col, int deltaRow, int deltaCol, int playerToCheck, int currentPlayer, int weight);
+	int evaluateDiagonal(Connect4& game, int row, int col, int playerToCheck, int currentPlayer);
 	int countWinPos(int player);
 
 	bool OppWinPosInColumn(int column);
