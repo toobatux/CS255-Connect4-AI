@@ -133,7 +133,7 @@ bool Connect4::checkHorizontal()
                 if (board[r][c + i] == currentPlayer) {
                     count++;
                 }
-                if (count == 4) {
+                if (count >= 4) {
                     return true;
                 }
             }
@@ -153,7 +153,7 @@ bool Connect4::checkVertical()
                 if (board[r + i][c] == currentPlayer) {
                     count++;
                 }
-                if (count == 4) {
+                if (count >= 4) {
                     return true;
                 }
             }
@@ -174,7 +174,7 @@ bool Connect4::checkDiagonal()
                 if (board[r - i][c + i] == currentPlayer) {
                     count++;
                 }
-                if (count == 4) {
+                if (count >= 4) {
                     return true;
                 }
             }
@@ -191,7 +191,7 @@ bool Connect4::checkDiagonal()
                 if (board[r + i][c + i] == currentPlayer) {
                     count++;
                 }
-                if (count == 4) {
+                if (count >= 4) {
                     return true;
                 }
             }
@@ -282,7 +282,7 @@ int Connect4::bestMoveWithinTime(int maxTimeSeconds) {
                 return c;
             }
             else {
-                int eval = minimax(clone, 8, INT_MIN, INT_MAX, false, startTime, maxTimeSeconds);
+                int eval = minimax(clone, 20, INT_MIN, INT_MAX, false, startTime, maxTimeSeconds);
                 if (eval > bestEval) {
                     bestEval = eval;
                     bestMove = c;
@@ -294,31 +294,31 @@ int Connect4::bestMoveWithinTime(int maxTimeSeconds) {
     return bestMove;
 }
 
-std::vector<int> Connect4::calculatePriority()
-{
+std::vector<int> Connect4::calculatePriority() {
     std::vector<int> priorityOrder;
 
-    // Prioritize winning moves
+    // Prioritize winning moves for AI and blocking moves for the opponent
     for (int c = 0; c < numColumns; ++c) {
-        if (OppWinPosInColumn(c)) {
-            priorityOrder.push_back(c);
-            return priorityOrder; // Immediately return if found an opponent's winning move to block it
-        }
         if (isValidMove(c)) {
             Connect4 clone = this->copy();
             clone.makeMove(c, AI);
             if (clone.checkWin()) {
                 priorityOrder.push_back(c);
-                return priorityOrder; // Immediately return if found a winning move for AI
+                return priorityOrder;
+            }
+            // Prioritize blocking moves for the opponent
+            clone = this->copy();
+            clone.makeMove(c, PLAYER);
+            if (clone.checkWin()) {
+                priorityOrder.push_back(c);
             }
         }
     }
 
-    // Prioritize center column if available
+    // Handle the center column separately based on conditions
     int centerColumn = numColumns / 2;
-    if (turns == 0 && isValidMove(centerColumn)) {
+    if (isValidMove(centerColumn)) {
         priorityOrder.push_back(centerColumn);
-        return priorityOrder;
     }
 
     // Prioritize other columns after the first move
@@ -331,8 +331,7 @@ std::vector<int> Connect4::calculatePriority()
     return priorityOrder;
 }
 
-int Connect4::minimax(Connect4& game, int depth, int alpha, int beta, bool maximizingPlayer, std::chrono::high_resolution_clock::time_point startTime, int maxTimeSeconds)
-{
+int Connect4::minimax(Connect4& game, int depth, int alpha, int beta, bool maximizingPlayer, std::chrono::high_resolution_clock::time_point startTime, int maxTimeSeconds) {
     auto currentTime = std::chrono::high_resolution_clock::now();
     auto elapsedTime = std::chrono::duration_cast<std::chrono::seconds>(currentTime - startTime).count();
 
@@ -349,13 +348,13 @@ int Connect4::minimax(Connect4& game, int depth, int alpha, int beta, bool maxim
                 int eval = minimax(clone, depth - 1, alpha, beta, false, startTime, maxTimeSeconds);
                 maxEval = std::max(maxEval, eval);
                 alpha = std::max(alpha, eval);
-
-                if (beta <= alpha) { break; }
+                if (beta <= alpha) {
+                    break; // Beta cut-off
+                }
             }
         }
         return maxEval;
     }
-
     else {
         int minEval = INT_MAX;
         for (int c = 0; c < game.numColumns; c++) {
@@ -365,9 +364,9 @@ int Connect4::minimax(Connect4& game, int depth, int alpha, int beta, bool maxim
                 int eval = minimax(clone, depth - 1, alpha, beta, true, startTime, maxTimeSeconds);
                 minEval = std::min(minEval, eval);
                 beta = std::min(beta, eval);
-
-                if (beta <= alpha) { break; }
-
+                if (beta <= alpha) {
+                    break; // Alpha cut-off
+                }
             }
         }
         return minEval;
@@ -420,6 +419,7 @@ int Connect4::evaluatePosition(Connect4& game, int row, int col, int playerToChe
     return score;
 }
 
+// Adjust weights and scores within evaluateLine function
 int Connect4::evaluateLine(Connect4& game, int row, int col, int deltaRow, int deltaCol, int playerToCheck, int currentPlayer, int weight) {
     int score = 0;
     int tokens = 0;
@@ -439,15 +439,27 @@ int Connect4::evaluateLine(Connect4& game, int row, int col, int deltaRow, int d
         }
     }
 
-    // Evaluate the line based on tokens and emptiness
     if (tokens == 4) {
         score += 10000; // Winning position
     }
     else if (tokens == 3 && empty == 1) {
-        score += 100; // Potential winning position
+        score += 50; // Potential winning position
+
+        // Adjust score based on the threat of opponent winning
+        if (playerToCheck == PLAYER) {
+            score += 100;
+        }
     }
     else if (tokens == 2 && empty == 2) {
-        score += 10; // Good position
+        score += 5; // Good position
+
+        // Add more weight to AI's potential winning positions
+        if (playerToCheck == AI) {
+            score += 2;
+        }
+    }
+    else if (tokens == 1 && empty == 3) {
+        score += 3; // Single token with three empty spaces
     }
 
     return score;
