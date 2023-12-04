@@ -25,9 +25,24 @@ void Connect4::printBoard()
     std::cout << std::endl << std::endl;
 }
 
+void Connect4::chooseFirstPlayer() {
+    std::cout << "Who would you like to play first? (Enter '1' for Player or '2' for AI): ";
+    int choice;
+    std::cin >> choice;
+
+    while (choice != 1 && choice != 2) {
+        std::cout << "Invalid choice. Please enter '1' for Player or '2' for AI: ";
+        std::cin.clear();
+        std::cin.ignore(INT_MAX, '\n');
+        std::cin >> choice;
+    }
+
+    currentPlayer = (choice == 1) ? PLAYER : AI;
+}
+
 void Connect4::playGame(int maxTimeSeconds)
 {
-    currentPlayer = PLAYER;
+    chooseFirstPlayer();
 
     bool gameDone = false;
 
@@ -213,7 +228,30 @@ int Connect4::aiMove(int maxTimeSeconds)
 {
     std::cout << "AI is choosing a move...\n";
 
-    return bestMoveWithinTime(maxTimeSeconds);
+    std::vector<int> priorityOrder = calculatePriority();
+    int bestMove = -1;
+    int bestEval = INT_MIN;
+
+    std::cout << "Evaluation values for each column:" << std::endl;
+
+    for (int c : priorityOrder) {
+        if (isValidMove(c)) {
+            Connect4 clone = this->copy();
+            clone.makeMove(c, AI);
+
+            int eval = minimax(clone, 8, INT_MIN, INT_MAX, false, std::chrono::high_resolution_clock::now(), maxTimeSeconds);
+
+            std::cout << "Column " << c << " - Value: " << eval << std::endl;
+
+            if (eval > bestEval) {
+                bestEval = eval;
+                bestMove = c;
+            }
+        }
+    }
+
+    return bestMove;
+
 }
 
 int Connect4::bestMoveWithinTime(int maxTimeSeconds) {
@@ -232,14 +270,23 @@ int Connect4::bestMoveWithinTime(int maxTimeSeconds) {
             break;
         }
 
+
         if (isValidMove(c)) {
             Connect4 clone = this->copy();
             clone.makeMove(c, AI);
 
-            int eval = minimax(clone, 8, INT_MIN, INT_MAX, false, startTime, maxTimeSeconds);
-            if (eval > bestEval) {
-                bestEval = eval;
-                bestMove = c;
+            if (clone.checkWin()) {
+                return c;
+            }
+            else if (OppWinPosInColumn(c)) {
+                return c;
+            }
+            else {
+                int eval = minimax(clone, 8, INT_MIN, INT_MAX, false, startTime, maxTimeSeconds);
+                if (eval > bestEval) {
+                    bestEval = eval;
+                    bestMove = c;
+                }
             }
         }
     }

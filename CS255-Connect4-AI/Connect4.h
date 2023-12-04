@@ -18,7 +18,7 @@ private:
 	std::vector<std::vector<int>> board;
 	int currentPlayer;
 	int turns;
-
+	void chooseFirstPlayer();
 	int userMove();
 	bool isValidMove(int column);
 	bool makeMove(int column, int player);
