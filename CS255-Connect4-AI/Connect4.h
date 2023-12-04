@@ -39,7 +39,7 @@ private:
 	int evaluate(Connect4& game, int player);
 	int evaluatePlayer(Connect4& game, int playerToCheck, int currentPlayer);
 	int evaluatePosition(Connect4& game, int row, int col, int playerToCheck, int currentPlayer);
-	int evaluateLine(Connect4& game, int row, int col, int deltaRow, int deltaCol, int playerToCheck, int currentPlayer, int weight);
+	int evaluateLine(Connect4& game, int row, int col, int deltaRow, int deltaCol, int playerToCheck, int currentPlayer, int& tokens, int& empty);
 	int evaluateDiagonal(Connect4& game, int row, int col, int playerToCheck, int currentPlayer);
 	int countWinPos(int player);
 
