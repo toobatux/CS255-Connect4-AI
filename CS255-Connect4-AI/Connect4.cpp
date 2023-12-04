@@ -240,20 +240,18 @@ int Connect4::bestMoveWithinTime(int maxTimeSeconds)
             if (clone.checkWin()) {
                 return c;
             }
-            else if (OppWinPosInColumn(c)) {
+            if (OppWinPosInColumn(c)) {
                 return c;
             }
-            else {
                 int eval = minimax(clone, 6, INT_MIN, INT_MAX, false, startTime, maxTimeSeconds);
-                
+
                 if (eval > bestEval) {
                     bestEval = eval;
                     bestMove = c;
                 }
             }
-        }
     }
-
+     
     return bestMove;
 }
 
@@ -264,14 +262,23 @@ std::vector<int> Connect4::calculatePriority()
 
     priorityOrder.push_back(centerCol);
 
-    for (int c = 1; c < numColumns - 1; c++) {
-        if (c != centerCol) {
-            priorityOrder.push_back(c);
-        }
+    priorityOrder.push_back(centerCol - 1);
+    priorityOrder.push_back(centerCol + 1);
+
+    for (int c = 1; c < centerCol - 1; c++) {
+        priorityOrder.push_back(c);
+    }
+
+    for (int c = centerCol + 2; c < numColumns - 1; c++) {
+        priorityOrder.push_back(c);
     }
 
     priorityOrder.push_back(0);
     priorityOrder.push_back(numColumns - 1);
+
+    //for (int c = 0; c < priorityOrder.size(); c++) {
+    //    std::cout << priorityOrder[c] << "\n";
+    //}
 
     return priorityOrder;
 }
@@ -282,7 +289,7 @@ int Connect4::minimax(Connect4& game, int depth, int alpha, int beta, bool maxim
     auto elapsedTime = std::chrono::duration_cast<std::chrono::seconds>(currentTime - startTime).count();
 
     if (depth == 0 || game.checkWin() || game.isBoardFull() || elapsedTime >= maxTimeSeconds) {
-        return evaluate(game);
+        return evaluate(game, AI);
     }
 
     if (maximizingPlayer) {
@@ -319,10 +326,13 @@ int Connect4::minimax(Connect4& game, int depth, int alpha, int beta, bool maxim
     }
 }
 
-int Connect4::evaluate(Connect4& game)
+int Connect4::evaluate(Connect4& game, int player)
 {
-    int aiScore = occurrences(game, AI);
-    int playerScore = occurrences(game, PLAYER);
+   /* int aiScore = occurrences(game, AI);
+    int playerScore = occurrences(game, PLAYER);*/
+
+    int aiScore = evaluatePlayer(game, AI, player);
+    int playerScore = evaluatePlayer(game, PLAYER, player);
 
     return aiScore - playerScore;
 }
@@ -370,4 +380,108 @@ bool Connect4::OppWinPosInColumn(int column)
         return isOppWinning;
     }
     return false;
+}
+
+int Connect4::getOpponentMove(Connect4& game)
+{
+    for (int c = 0; c < game.numColumns; c++) {
+        if (game.isValidMove(c)) {
+            return c;
+        }
+    }
+    return -1; // No valid move (shouldn't get here)
+}
+
+int Connect4::countAvailableMoves()
+{
+    int count = 0;
+
+    for (int c = 0; c < numColumns; c++) {
+        if (isValidMove(c)) {
+            count++;
+        }
+    }
+
+    return count;
+}
+
+int Connect4::evaluatePlayer(Connect4& game, int playerToCheck, int currentPlayer) {
+    int score = 0;
+
+    // Evaluate rows and columns
+    for (int r = 0; r < game.numRows; r++) {
+        for (int c = 0; c < game.numColumns; c++) {
+            score += evaluatePosition(game, r, c, playerToCheck, currentPlayer);
+        }
+    }
+
+    // Evaluate diagonals
+    for (int r = 0; r < game.numRows; r++) {
+        for (int c = 0; c < game.numColumns; c++) {
+            score += evaluateDiagonal(game, r, c, playerToCheck, currentPlayer);
+        }
+    }
+
+    return score;
+}
+
+int Connect4::evaluatePosition(Connect4& game, int row, int col, int playerToCheck, int currentPlayer) {
+    int score = 0;
+    int weight = 1;
+
+    // Check horizontally
+    score += evaluateLine(game, row, col, 0, 1, playerToCheck, currentPlayer, weight);
+
+    // Check vertically
+    score += evaluateLine(game, row, col, 1, 0, playerToCheck, currentPlayer, weight);
+
+    // Check diagonally (positive slope)
+    score += evaluateLine(game, row, col, 1, 1, playerToCheck, currentPlayer, weight);
+
+    // Check diagonally (negative slope)
+    score += evaluateLine(game, row, col, 1, -1, playerToCheck, currentPlayer, weight);
+
+    return score;
+}
+
+int Connect4::evaluateLine(Connect4& game, int row, int col, int deltaRow, int deltaCol, int playerToCheck, int currentPlayer, int weight) {
+    int score = 0;
+    int tokens = 0;
+    int empty = 0;
+
+    for (int i = 0; i < 4; i++) {
+        int r = row + i * deltaRow;
+        int c = col + i * deltaCol;
+
+        if (r >= 0 && r < game.numRows && c >= 0 && c < game.numColumns) {
+            if (game.board[r][c] == playerToCheck) {
+                tokens++;
+            }
+            else if (game.board[r][c] == EMPTY) {
+                empty++;
+            }
+        }
+    }
+
+    // Evaluate the line based on tokens and emptiness
+    if (tokens == 4) {
+        score += 10000; // Winning position
+    }
+    else if (tokens == 3 && empty == 1) {
+        score += 100; // Potential winning position
+    }
+    else if (tokens == 2 && empty == 2) {
+        score += 10; // Good position
+    }
+
+    return score;
+}
+
+int Connect4::evaluateDiagonal(Connect4& game, int row, int col, int playerToCheck, int currentPlayer) {
+    int score = 0;
+
+    score += evaluateLine(game, row, col, 1, 1, playerToCheck, currentPlayer, 1); // Positive slope
+    score += evaluateLine(game, row, col, 1, -1, playerToCheck, currentPlayer, 1); // Negative slope
+
+    return score;
 }
