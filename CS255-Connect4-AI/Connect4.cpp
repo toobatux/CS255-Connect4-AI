@@ -282,7 +282,7 @@ int Connect4::bestMoveWithinTime(int maxTimeSeconds) {
                 return c;
             }
             else {
-                int eval = minimax(clone, 20, INT_MIN, INT_MAX, false, startTime, maxTimeSeconds);
+                int eval = minimax(clone, 11, INT_MIN, INT_MAX, false, startTime, maxTimeSeconds);
                 if (eval > bestEval) {
                     bestEval = eval;
                     bestMove = c;
@@ -443,7 +443,7 @@ int Connect4::evaluateLine(Connect4& game, int row, int col, int deltaRow, int d
         score += 10000; // Winning position
     }
     else if (tokens == 3 && empty == 1) {
-        score += 50; // Potential winning position
+        score += 20; // Potential winning position
 
         // Adjust score based on the threat of opponent winning
         if (playerToCheck == PLAYER) {
@@ -451,7 +451,7 @@ int Connect4::evaluateLine(Connect4& game, int row, int col, int deltaRow, int d
         }
     }
     else if (tokens == 2 && empty == 2) {
-        score += 5; // Good position
+        score += 6; // Good position
 
         // Add more weight to AI's potential winning positions
         if (playerToCheck == AI) {
